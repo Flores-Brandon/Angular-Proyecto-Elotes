@@ -1,4 +1,29 @@
-<div style="display: flex; height: 100vh; font-family: sans-serif;">
+<div *ngIf="cargando" style="padding: 50px; text-align: center; font-family: sans-serif;">
+  <h2>⌛ Verificando estado de caja...</h2>
+</div>
+
+<div *ngIf="!cargando && !cajaAbierta" 
+     style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: sans-serif; background-color: #fadbd8;">
+  
+  <div style="font-size: 80px;">🔒</div>
+  <h1 style="color: #c0392b; font-size: 40px; margin: 10px 0;">LA CAJA ESTÁ CERRADA</h1>
+  <p style="font-size: 20px; color: #555;">No puedes realizar ventas hasta que se abra un turno.</p>
+  
+  <div style="margin-top: 30px; display: flex; gap: 20px;">
+    <button (click)="salir()" 
+            style="padding: 15px 30px; background: #95a5a6; color: white; border: none; font-size: 18px; cursor: pointer; border-radius: 8px;">
+      ⬅ Volver al Menú
+    </button>
+    
+    <button (click)="irACaja()" 
+            style="padding: 15px 30px; background: #27ae60; color: white; border: none; font-size: 18px; cursor: pointer; border-radius: 8px; font-weight: bold;">
+      🔐 Ir a Abrir Caja
+    </button>
+  </div>
+</div>
+
+
+<div *ngIf="!cargando && cajaAbierta" style="display: flex; height: 100vh; font-family: sans-serif;">
 
   <div style="width: 60%; background-color: #ecf0f1; padding: 20px; overflow-y: auto;">
     <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
@@ -58,7 +83,6 @@
       </div>
 
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-        
         <button (click)="cobrar('Efectivo')" 
                 [disabled]="total === 0 || pagoCon < total"
                 [style.opacity]="(total > 0 && pagoCon >= total) ? '1' : '0.5'"
@@ -71,7 +95,6 @@
                 style="padding: 15px; background-color: #2980b9; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
           💳 Tarjeta
         </button>
-
       </div>
 
       <button (click)="cobrar('Regalo')" 

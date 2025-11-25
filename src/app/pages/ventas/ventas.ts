@@ -15,15 +15,37 @@ export class Ventas implements OnInit {
   
   listaProductos: any[] = [];
   carrito: any[] = [];
-  
   total: number = 0;
   pagoCon: number = 0;
   cambio: number = 0;
 
+  // 👇 VARIABLE DE CONTROL
+  cajaAbierta: boolean = false; 
+  cargando: boolean = true; // Para que no parpadee feo al inicio
+
   constructor(private productoService: ProductoService, private router: Router) {}
 
   ngOnInit() {
-    this.cargarProductos();
+    this.verificarCaja();
+  }
+
+  // 👇 PRIMERO VERIFICAMOS LA CAJA
+  verificarCaja() {
+    this.productoService.verificarTurno().subscribe({
+      next: (resp) => {
+        this.cajaAbierta = resp.abierto;
+        this.cargando = false;
+        
+        // Solo si está abierta cargamos los productos
+        if (this.cajaAbierta) {
+          this.cargarProductos();
+        }
+      },
+      error: () => {
+        this.cajaAbierta = false;
+        this.cargando = false;
+      }
+    });
   }
 
   cargarProductos() {
@@ -49,7 +71,6 @@ export class Ventas implements OnInit {
   }
 
   calcularCambio() {
-    // Solo calculamos cambio si paga con más del total
     if (this.pagoCon >= this.total) {
       this.cambio = this.pagoCon - this.total;
     } else {
@@ -57,7 +78,6 @@ export class Ventas implements OnInit {
     }
   }
 
-  // 👇 ESTA ES LA FUNCIÓN ACTUALIZADA
   cobrar(metodo: string) {
     if (this.carrito.length === 0) {
       alert('El carrito está vacío');
@@ -66,14 +86,13 @@ export class Ventas implements OnInit {
 
     let esRegalo = false;
 
-    // Lógica según el botón presionado
     if (metodo === 'Regalo') {
       esRegalo = true;
       this.pagoCon = 0;
       this.cambio = 0;
     } 
     else if (metodo === 'Tarjeta') {
-      this.pagoCon = this.total; // En tarjeta se cobra exacto
+      this.pagoCon = this.total;
       this.cambio = 0;
     }
     else if (metodo === 'Efectivo') {
@@ -83,13 +102,12 @@ export class Ventas implements OnInit {
       }
     }
 
-    // Preparamos el objeto para el Backend
     const ventaModelo = {
       totalVenta: this.total,
       pagoRecibido: this.pagoCon,
       cambioDado: this.cambio,
       esRegalado: esRegalo,
-      metodoPago: metodo, // <--- Aquí mandamos 'Efectivo', 'Tarjeta' o 'Regalo'
+      metodoPago: metodo,
     };
 
     this.productoService.registrarVenta(ventaModelo).subscribe({
@@ -101,7 +119,8 @@ export class Ventas implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        alert('Error al registrar la venta. Revisa que la caja esté abierta.');
+        // Si el backend rechaza por caja cerrada, aquí atrapamos el error también
+        alert('⛔ ERROR: ' + (err.error || 'No se pudo registrar la venta.'));
       }
     });
   }
@@ -115,5 +134,9 @@ export class Ventas implements OnInit {
 
   salir() {
     this.router.navigate(['/dashboard']);
+  }
+  
+  irACaja() {
+    this.router.navigate(['/caja']);
   }
 }
