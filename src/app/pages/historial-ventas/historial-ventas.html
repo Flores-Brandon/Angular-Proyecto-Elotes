@@ -1,0 +1,46 @@
+<div style="padding: 20px; font-family: sans-serif; max-width: 1000px; margin: 0 auto;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+    <h1 style="color: #2980b9; margin: 0;">📜 Historial de Ventas</h1>
+    <button (click)="volver()" style="background: #7f8c8d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
+      ⬅ Volver al Panel
+    </button>
+  </div>
+
+  <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; min-width: 250px;">
+    <span style="display: block; font-size: 14px; opacity: 0.9;">Ventas Totales Registradas</span>
+    <span style="display: block; font-size: 32px; font-weight: bold;">${{ totalVendido.toFixed(2) }}</span>
+  </div>
+
+  <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead style="background: #2980b9; color: white;">
+        <tr>
+          <th style="padding: 12px; text-align: left;">ID</th>
+          <th style="padding: 12px; text-align: left;">Fecha y Hora</th>
+          <th style="padding: 12px; text-align: left;">Usuario</th>
+          <th style="padding: 12px; text-align: left;">Recibido</th>
+          <th style="padding: 12px; text-align: left;">Cambio</th>
+          <th style="padding: 12px; text-align: right;">Total Venta</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let venta of listaVentas" style="border-bottom: 1px solid #eee;">
+          <td style="padding: 12px;">#{{ venta.idVenta }}</td>
+          <td style="padding: 12px;">{{ venta.fechaHora | date:'medium' }}</td>
+          <td style="padding: 12px;">Cajero #{{ venta.idUsuario }}</td>
+          <td style="padding: 12px;">${{ venta.pagoRecibido }}</td>
+          <td style="padding: 12px; color: #e67e22;">${{ venta.cambioDado }}</td>
+          <td style="padding: 12px; text-align: right; font-weight: bold; color: #27ae60;">
+            ${{ venta.totalVenta }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="listaVentas.length === 0" style="padding: 30px; text-align: center; color: #aaa;">
+      Aún no se han registrado ventas.
+    </div>
+  </div>
+
+</div>

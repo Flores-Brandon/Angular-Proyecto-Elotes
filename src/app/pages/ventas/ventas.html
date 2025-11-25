@@ -1,0 +1,86 @@
+<div style="display: flex; height: 100vh; font-family: sans-serif;">
+
+  <div style="width: 60%; background-color: #ecf0f1; padding: 20px; overflow-y: auto;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+      <h2 style="margin: 0; color: #2c3e50;">🌽 Menú</h2>
+      <button (click)="salir()" style="background: #95a5a6; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer;">
+        Volver
+      </button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+      <div *ngFor="let item of listaProductos" 
+           (click)="agregarAlCarrito(item)"
+           style="background: white; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: transform 0.2s;">
+        <div style="font-size: 40px;">🌽</div> 
+        <h3 style="margin: 10px 0; font-size: 18px;">{{ item.nombre }}</h3>
+        <span style="background: #27ae60; color: white; padding: 5px 10px; border-radius: 20px; font-weight: bold;">
+          ${{ item.precioVenta }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 40%; background-color: white; border-left: 2px solid #ddd; display: flex; flex-direction: column;">
+    
+    <div style="flex-grow: 1; padding: 20px; overflow-y: auto;">
+      <h2 style="color: #2980b9; margin-top: 0;">🧾 Ticket</h2>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr *ngFor="let item of carrito; let i = index" style="border-bottom: 1px solid #eee;">
+          <td style="padding: 10px;">{{ item.nombre }}</td>
+          <td style="padding: 10px; font-weight: bold;">${{ item.precioVenta }}</td>
+          <td style="padding: 10px; text-align: right;">
+            <button (click)="quitarDelCarrito(i)" style="color: red; background: none; border: none; cursor: pointer; font-weight: bold;">X</button>
+          </td>
+        </tr>
+      </table>
+      <p *ngIf="carrito.length === 0" style="text-align: center; color: #aaa; margin-top: 50px;">
+        Selecciona productos...
+      </p>
+    </div>
+
+    <div style="background-color: #f8f9fa; padding: 20px; border-top: 2px solid #ddd;">
+      
+      <div style="display: flex; justify-content: space-between; font-size: 24px; font-weight: bold; margin-bottom: 20px;">
+        <span>TOTAL:</span>
+        <span style="color: #2c3e50;">${{ total }}</span>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 5px;">Recibido (Efectivo):</label>
+        <input type="number" [(ngModel)]="pagoCon" (keyup)="calcularCambio()" placeholder="$0.00"
+               style="width: 100%; padding: 15px; font-size: 20px; border: 2px solid #bdc3c7; border-radius: 5px; box-sizing: border-box;">
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 18px; color: #7f8c8d; margin-bottom: 20px;">
+        <span>Cambio:</span>
+        <span style="font-weight: bold; color: #e67e22;">${{ cambio }}</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        
+        <button (click)="cobrar('Efectivo')" 
+                [disabled]="total === 0 || pagoCon < total"
+                [style.opacity]="(total > 0 && pagoCon >= total) ? '1' : '0.5'"
+                style="padding: 15px; background-color: #27ae60; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+          💵 Efectivo
+        </button>
+
+        <button (click)="cobrar('Tarjeta')" 
+                [disabled]="total === 0"
+                style="padding: 15px; background-color: #2980b9; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+          💳 Tarjeta
+        </button>
+
+      </div>
+
+      <button (click)="cobrar('Regalo')" 
+              [disabled]="total === 0"
+              style="width: 100%; padding: 10px; background-color: #e67e22; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+        🎁 Marcar como Regalo
+      </button>
+
+    </div>
+  </div>
+
+</div>

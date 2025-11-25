@@ -1,0 +1,62 @@
+<div style="padding: 30px; font-family: sans-serif; max-width: 800px; margin: 0 auto; text-align: center;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h1 style="color: #2c3e50;">🔐 Control de Turnos</h1>
+        <button (click)="volver()" style="padding: 8px 15px; cursor: pointer;">⬅ Volver</button>
+    </div>
+
+    <div *ngIf="estadoCaja && !estadoCaja.abierto" 
+         style="background: #fadbd8; padding: 30px; border-radius: 10px; border: 2px solid #e74c3c;">
+        <h2 style="color: #c0392b; margin-top: 0;">🔴 Caja CERRADA</h2>
+        <div style="margin-bottom: 15px;">
+            <label style="display:block; font-weight: bold;">Fondo Inicial ($):</label>
+            <input type="number" [(ngModel)]="montoInicial" placeholder="0.00" style="padding: 8px; font-size: 18px; width: 100px;">
+        </div>
+        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #555;">👮 Autorización:</p>
+            <input type="text" [(ngModel)]="auth.username" placeholder="Usuario" style="width: 90%; padding: 8px; margin-bottom: 5px;"><br>
+            <input type="password" [(ngModel)]="auth.password" placeholder="Contraseña" style="width: 90%; padding: 8px;">
+        </div>
+        <button (click)="abrir()" style="background: #27ae60; color: white; padding: 10px 20px; font-size: 16px; border: none; cursor: pointer; border-radius: 5px;">🔓 ABRIR TURNO</button>
+    </div>
+
+    <div *ngIf="estadoCaja && estadoCaja.abierto && resumen" 
+         style="background: #d5f5e3; padding: 30px; border-radius: 10px; border: 2px solid #27ae60;">
+        
+        <h2 style="color: #1e8449; margin-top: 0;">🟢 Turno en Curso</h2>
+        <p><strong>Inicio:</strong> {{ resumen.fechaInicio | date:'medium' }}</p>
+
+        <table style="width: 100%; background: white; border-collapse: collapse; margin: 20px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; text-align: left;">💰 Fondo Inicial</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold;">+ ${{ resumen.saldoInicial }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 10px; text-align: left;">💵 Ventas en Efectivo</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: green;">+ ${{ resumen.totalEfectivo }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #eee; background-color: #f9f9f9;">
+                <td style="padding: 10px; text-align: left;">💳 Ventas con Tarjeta (Banco)</td>
+                <td style="padding: 10px; text-align: right; color: #2980b9;">${{ resumen.totalTarjeta }}</td>
+            </tr>
+            <tr style="border-bottom: 2px solid #ddd; background-color: #f9f9f9;">
+                <td style="padding: 10px; text-align: left;">🎁 Regalado (Mermas)</td>
+                <td style="padding: 10px; text-align: right; color: #e67e22;">${{ resumen.totalRegalos }}</td>
+            </tr>
+            <tr style="background-color: #34495e; color: white;">
+                <td style="padding: 15px; text-align: left; font-size: 18px;">💵 TOTAL EN CAJÓN</td>
+                <td style="padding: 15px; text-align: right; font-size: 18px; font-weight: bold;">
+                    ${{ resumen.dineroEnCaja }}
+                </td>
+            </tr>
+        </table>
+        
+        <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px 0; font-weight: bold; color: #555;">👮 Firma de Cierre:</p>
+            <input type="text" [(ngModel)]="auth.username" placeholder="Usuario" style="width: 90%; padding: 8px; margin-bottom: 5px;"><br>
+            <input type="password" [(ngModel)]="auth.password" placeholder="Contraseña" style="width: 90%; padding: 8px;">
+        </div>
+        
+        <button (click)="cerrar()" style="background: #c0392b; color: white; padding: 10px 20px; font-size: 16px; border: none; cursor: pointer; border-radius: 5px;">🔒 REALIZAR CORTE Y CERRAR</button>
+    </div>
+</div>

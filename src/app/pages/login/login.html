@@ -1,0 +1,31 @@
+<div style="height: 100vh; display: flex; justify-content: center; align-items: center; background-color: #f0f2f5; font-family: sans-serif;">
+    
+    <div style="background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 350px;">
+        
+        <h2 style="text-align: center; color: #1a73e8; margin-bottom: 30px;">🌽 Elote POS</h2>
+        
+        <div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; color: #666;">Usuario</label>
+                <input type="text" [(ngModel)]="usuario.username" placeholder="Escribe tu usuario" 
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; color: #666;">Contraseña</label>
+                <input type="password" [(ngModel)]="usuario.password" placeholder="••••••" 
+                       style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box;">
+            </div>
+
+            <p *ngIf="mensajeError" style="color: red; text-align: center; font-size: 14px; background: #ffebee; padding: 5px; border-radius: 4px;">
+                {{ mensajeError }}
+            </p>
+
+            <button (click)="entrar()" 
+                    style="width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;">
+                INICIAR SESIÓN
+            </button>
+        </div>
+
+    </div>
+</div>
