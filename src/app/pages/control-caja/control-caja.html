@@ -7,7 +7,13 @@
 
     <div *ngIf="estadoCaja && !estadoCaja.abierto" 
          style="background: #fadbd8; padding: 30px; border-radius: 10px; border: 2px solid #e74c3c;">
-        <h2 style="color: #c0392b; margin-top: 0;">🔴 Caja CERRADA</h2>
+        
+        <h2 style="color: #c0392b; margin-top: 0; margin-bottom: 5px;">🔴 Caja CERRADA</h2>
+        
+        <p style="color: #c0392b; font-size: 14px; margin-bottom: 20px;">
+            Último cierre por: <strong>{{ estadoCaja.usuarioCierra || '---' }}</strong>
+        </p>
+
         <div style="margin-bottom: 15px;">
             <label style="display:block; font-weight: bold;">Fondo Inicial ($):</label>
             <input type="number" [(ngModel)]="montoInicial" placeholder="0.00" style="padding: 8px; font-size: 18px; width: 100px;">
@@ -23,7 +29,12 @@
     <div *ngIf="estadoCaja && estadoCaja.abierto && resumen" 
          style="background: #d5f5e3; padding: 30px; border-radius: 10px; border: 2px solid #27ae60;">
         
-        <h2 style="color: #1e8449; margin-top: 0;">🟢 Turno en Curso</h2>
+        <h2 style="color: #1e8449; margin-top: 0; margin-bottom: 5px;">🟢 Turno en Curso</h2>
+        
+        <p style="color: #1e8449; font-size: 14px; margin-bottom: 20px;">
+            Abierto por: <strong>{{ estadoCaja.usuarioAbre || '---' }}</strong>
+        </p>
+
         <p><strong>Inicio:</strong> {{ resumen.fechaInicio | date:'medium' }}</p>
 
         <table style="width: 100%; background: white; border-collapse: collapse; margin: 20px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">

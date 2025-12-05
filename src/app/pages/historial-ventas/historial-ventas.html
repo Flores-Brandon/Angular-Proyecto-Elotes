@@ -1,15 +1,42 @@
 <div style="padding: 20px; font-family: sans-serif; max-width: 1000px; margin: 0 auto;">
   
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <h1 style="color: #2980b9; margin: 0;">📜 Historial de Ventas</h1>
     <button (click)="volver()" style="background: #7f8c8d; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-      ⬅ Volver al Panel
+      ⬅ Volver
     </button>
   </div>
 
-  <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: inline-block; min-width: 250px;">
-    <span style="display: block; font-size: 14px; opacity: 0.9;">Ventas Totales Registradas</span>
-    <span style="display: block; font-size: 32px; font-weight: bold;">${{ totalVendido.toFixed(2) }}</span>
+  <div style="background: #ecf0f1; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+    
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">Desde:</label>
+      <input type="date" [(ngModel)]="fechaInicio" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+
+    <div>
+      <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">Hasta:</label>
+      <input type="date" [(ngModel)]="fechaFin" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+    </div>
+
+    <button (click)="buscar()" style="background: #2980b9; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+      🔍 Buscar
+    </button>
+
+    <button (click)="limpiarFiltros()" style="background: white; color: #7f8c8d; border: 1px solid #ccc; padding: 10px 15px; border-radius: 4px; cursor: pointer;">
+      Ver Hoy
+    </button>
+
+    <button (click)="descargarExcel()" style="margin-left: auto; background: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+      📥 Descargar Excel
+    </button>
+
+  </div>
+
+  <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <span style="font-size: 14px; opacity: 0.9;">Ventas en este periodo:</span>
+    <div style="font-size: 32px; font-weight: bold;">${{ totalVendido.toFixed(2) }}</div>
+    <div style="font-size: 12px;">({{ listaVentas.length }} operaciones registradas)</div>
   </div>
 
   <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -18,19 +45,25 @@
         <tr>
           <th style="padding: 12px; text-align: left;">ID</th>
           <th style="padding: 12px; text-align: left;">Fecha y Hora</th>
-          <th style="padding: 12px; text-align: left;">Usuario</th>
-          <th style="padding: 12px; text-align: left;">Recibido</th>
-          <th style="padding: 12px; text-align: left;">Cambio</th>
-          <th style="padding: 12px; text-align: right;">Total Venta</th>
+          <th style="padding: 12px; text-align: left;">Método</th>
+          <th style="padding: 12px; text-align: left;">Cajero</th>
+          <th style="padding: 12px; text-align: right;">Total</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let venta of listaVentas" style="border-bottom: 1px solid #eee;">
-          <td style="padding: 12px;">#{{ venta.idVenta }}</td>
+        <tr *ngFor="let venta of ventasPaginadas" style="border-bottom: 1px solid #eee;">
+          <td style="padding: 12px; color: #7f8c8d;">#{{ venta.idVenta }}</td>
+          
           <td style="padding: 12px;">{{ venta.fechaHora | date:'medium' }}</td>
-          <td style="padding: 12px;">Cajero #{{ venta.idUsuario }}</td>
-          <td style="padding: 12px;">${{ venta.pagoRecibido }}</td>
-          <td style="padding: 12px; color: #e67e22;">${{ venta.cambioDado }}</td>
+
+          <td style="padding: 12px;">
+            <span [style.color]="venta.metodoPago === 'Tarjeta' ? '#2980b9' : (venta.metodoPago === 'Regalo' ? '#e67e22' : 'green')" style="font-weight: bold;">
+              {{ venta.metodoPago }}
+            </span>
+          </td>
+
+          <td style="padding: 12px;">ID: {{ venta.idUsuario }}</td>
+          
           <td style="padding: 12px; text-align: right; font-weight: bold; color: #27ae60;">
             ${{ venta.totalVenta }}
           </td>
@@ -38,9 +71,30 @@
       </tbody>
     </table>
 
-    <div *ngIf="listaVentas.length === 0" style="padding: 30px; text-align: center; color: #aaa;">
-      Aún no se han registrado ventas.
+    <div *ngIf="listaVentas.length === 0" style="padding: 40px; text-align: center; color: #aaa;">
+      No hay ventas registradas en este periodo.
     </div>
+
+    <div *ngIf="listaVentas.length > 0" style="padding: 15px; border-top: 1px solid #eee; display: flex; justify-content: center; align-items: center; gap: 20px;">
+      
+      <button (click)="cambiarPagina(-1)" 
+              [disabled]="paginaActual === 1"
+              style="padding: 5px 15px; cursor: pointer; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 4px;">
+        ⬅ Anterior
+      </button>
+
+      <span style="font-weight: bold; color: #2c3e50;">
+        Página {{ paginaActual }} de {{ totalPaginas }}
+      </span>
+
+      <button (click)="cambiarPagina(1)" 
+              [disabled]="paginaActual === totalPaginas"
+              style="padding: 5px 15px; cursor: pointer; background: #ecf0f1; border: 1px solid #bdc3c7; border-radius: 4px;">
+        Siguiente ➡
+      </button>
+      
+    </div>
+
   </div>
 
 </div>

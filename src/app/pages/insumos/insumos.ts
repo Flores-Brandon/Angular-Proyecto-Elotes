@@ -1,97 +1,99 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Importante para la tabla (*ngFor)
-import { FormsModule } from '@angular/forms';   // Importante para el formulario (ngModel)
-import { Router } from '@angular/router';       // Para el botón de "Volver"
-import { ProductoService } from '../../services/producto.service'; // Nuestro mesero
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router'; // <--- Importante para navegar
+import { ProductoService } from '../../services/producto.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-insumos',
   standalone: true,
-  imports: [CommonModule, FormsModule], // ¡No olvides estos imports!
-  templateUrl: './insumos.html',        // Asegúrate que este nombre coincida con tu archivo
-  styleUrl: './insumos.css',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './insumos.html',
+  styleUrl: './insumos.css'
 })
 export class Insumos implements OnInit {
   
-  // Variables para guardar datos
   listaInsumos: any[] = [];
-  nuevoInsumo: any = { idInsumo: 0, nombre: '', unidadMedida: '', costo: 0 };
+  nuevoInsumo: any = { idInsumo: 0, nombre: '', unidadMedida: '', stock: 0, requiereConteo: false };
   esEdicion: boolean = false;
 
-  // Inyectamos el servicio y el router
+  // 👇 Asegúrate de que 'private router: Router' esté aquí
   constructor(private productoService: ProductoService, private router: Router) {}
 
-  // Al iniciar, cargamos la lista
   ngOnInit() {
     this.cargarInsumos();
   }
 
   cargarInsumos() {
     this.productoService.getInsumos().subscribe({
-      next: (datos) => {
-        this.listaInsumos = datos;
-        console.log('Insumos cargados:', datos);
-      },
-      error: (error) => {
-        console.error('Error:', error);
-        // Si falla (ej. no hay sesión), mandamos al login
-        this.router.navigate(['/login']);
-      }
+      next: (datos) => this.listaInsumos = datos,
+      error: () => Swal.fire('Error', 'No se pudo cargar el inventario', 'error')
     });
   }
 
   guardar() {
-    // Validación simple
-    if (!this.nuevoInsumo.nombre || this.nuevoInsumo.costo <= 0) {
-      alert('Por favor completa los datos correctamente.');
+    if (!this.nuevoInsumo.nombre || !this.nuevoInsumo.unidadMedida || this.nuevoInsumo.stock < 0) {
+      Swal.fire('Cuidado', 'Llena todos los campos correctamente.', 'warning');
       return;
     }
 
     if (this.esEdicion) {
-      // EDITAR
       this.productoService.actualizarInsumo(this.nuevoInsumo.idInsumo, this.nuevoInsumo).subscribe({
         next: () => {
-          alert('Insumo actualizado');
+          Swal.fire('Actualizado', `El insumo ${this.nuevoInsumo.nombre} se actualizó.`, 'success');
           this.limpiarFormulario();
           this.cargarInsumos();
         },
-        error: () => alert('Error al actualizar')
+        error: () => Swal.fire('Error', 'No se pudo actualizar.', 'error')
       });
     } else {
-      // CREAR
       this.productoService.crearInsumo(this.nuevoInsumo).subscribe({
         next: () => {
-          alert('Insumo creado');
+          Swal.fire('Creado', `Insumo ${this.nuevoInsumo.nombre} agregado.`, 'success');
           this.limpiarFormulario();
           this.cargarInsumos();
         },
-        error: () => alert('Error al crear')
+        error: () => Swal.fire('Error', 'No se pudo guardar.', 'error')
       });
     }
   }
 
-  // Prepara el formulario para editar
   editar(item: any) {
-    this.nuevoInsumo = { ...item }; // Copia el objeto para no alterar la tabla visualmente
+    this.nuevoInsumo = { ...item };
     this.esEdicion = true;
   }
 
-  // Elimina el insumo
   eliminar(id: number) {
-    if (confirm('¿Seguro que quieres borrar este insumo?')) {
-      this.productoService.eliminarInsumo(id).subscribe({
-        next: () => this.cargarInsumos(),
-        error: () => alert('Error al eliminar')
-      });
-    }
+    Swal.fire({
+      title: '¿Eliminar Insumo?',
+      text: "Esta acción no se puede deshacer.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, borrar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.productoService.eliminarInsumo(id).subscribe({
+          next: () => {
+            Swal.fire('Borrado', 'El insumo ha sido eliminado.', 'success');
+            this.cargarInsumos();
+          },
+          error: () => Swal.fire('Error', 'No se pudo eliminar.', 'error')
+        });
+      }
+    });
   }
 
-  limpiarFormulario() {
-    this.nuevoInsumo = { idInsumo: 0, nombre: '', unidadMedida: '', costo: 0 };
-    this.esEdicion = false;
-  }
+limpiarFormulario() {
+  this.nuevoInsumo = { idInsumo: 0, nombre: '', unidadMedida: '', stock: 0, requiereConteo: false };
+  this.esEdicion = false;
+}
 
-  irAProductos() {
+  // 👇 ESTA FUNCIÓN ES LA QUE HACE LA MAGIA DEL BOTÓN
+  volver() {
     this.router.navigate(['/dashboard']);
   }
 }

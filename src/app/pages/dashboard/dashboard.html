@@ -2,7 +2,9 @@
   
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
     
-    <h1 style="color: #2c3e50; margin: 0;">🌽 Panel de Jefe</h1>
+    <h1 style="color: #2c3e50; margin: 0;">
+      {{ esJefe ? '👑 Panel de Dueño' : (esGerente ? '👔 Panel de Gerente' : '👷 Panel de Empleado') }}
+    </h1>
     
     <div style="display: flex; gap: 10px;">
       
@@ -11,12 +13,12 @@
         💰 Ir a Caja
       </button>
 
-      <button *ngIf="esJefe" (click)="irAInsumos()" 
+      <button *ngIf="esJefe || esGerente" (click)="irAInsumos()" 
               style="background: #8e44ad; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
         📦 Insumos
       </button>
 
-      <button *ngIf="esJefe" (click)="irAHistorial()" 
+      <button *ngIf="esJefe || esGerente" (click)="irAHistorial()" 
               style="background: #2980b9; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
         📜 Historial
       </button>
@@ -26,7 +28,7 @@
         👥 Empleados
       </button>
       
-<button (click)="irACaja()" 
+      <button (click)="irACaja()" 
               style="background: #34495e; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
         🔐 Turnos
       </button>
@@ -39,7 +41,7 @@
 
   </div>
 
-  <div *ngIf="esJefe" [style.background-color]="esEdicion ? '#fff3cd' : 'white'" 
+  <div *ngIf="esJefe || esGerente" [style.background-color]="esEdicion ? '#fff3cd' : 'white'" 
        style="padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; transition: background 0.3s; border: 1px solid #eee;">
     
     <h3 style="margin-top: 0; color: #34495e;">
@@ -83,7 +85,7 @@
           <th style="padding: 15px;">Producto</th>
           <th style="padding: 15px;">Precio</th>
           
-          <th *ngIf="esJefe" style="padding: 15px; text-align: center;">Acciones</th>
+          <th *ngIf="esJefe || esGerente" style="padding: 15px; text-align: center;">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -92,13 +94,16 @@
           <td style="padding: 15px; font-weight: bold; color: #2c3e50;">{{ item.nombre }}</td>
           <td style="padding: 15px; color: #27ae60; font-weight: bold;">${{ item.precioVenta }}</td>
           
-          <td *ngIf="esJefe" style="padding: 15px; text-align: center;">
+          <td *ngIf="esJefe || esGerente" style="padding: 15px; text-align: center;">
+            
             <button (click)="editar(item)" style="margin-right: 10px; background: white; border: 1px solid #3498db; color: #3498db; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
               ✏️ Editar
             </button>
-            <button (click)="eliminar(item.idProducto)" style="background: white; border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            
+            <button *ngIf="esJefe" (click)="eliminar(item.idProducto)" style="background: white; border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
               🗑️ Eliminar
             </button>
+
           </td>
         </tr>
       </tbody>
@@ -107,6 +112,10 @@
     <div *ngIf="listaProductos.length === 0" style="padding: 40px; text-align: center; color: #7f8c8d; background-color: #f9f9f9;">
       <p style="margin: 0; font-size: 16px;">No hay productos registrados aún.</p>
     </div>
+  </div>
+
+  <div *ngIf="!esJefe && !esGerente" style="text-align: center; margin-top: 50px; color: #95a5a6;">
+    <p>Bienvenido. Usa el botón <b>💰 Ir a Caja</b> para cobrar.</p>
   </div>
 
 </div>

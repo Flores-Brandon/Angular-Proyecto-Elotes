@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductoService } from '../../services/producto.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-ventas',
@@ -15,13 +16,14 @@ export class Ventas implements OnInit {
   
   listaProductos: any[] = [];
   carrito: any[] = [];
+  
   total: number = 0;
   pagoCon: number = 0;
   cambio: number = 0;
 
-  // 👇 VARIABLE DE CONTROL
+  // Variable de control para bloqueo de pantalla
   cajaAbierta: boolean = false; 
-  cargando: boolean = true; // Para que no parpadee feo al inicio
+  cargando: boolean = true;
 
   constructor(private productoService: ProductoService, private router: Router) {}
 
@@ -29,14 +31,14 @@ export class Ventas implements OnInit {
     this.verificarCaja();
   }
 
-  // 👇 PRIMERO VERIFICAMOS LA CAJA
+  // 1. Verificamos si la caja está abierta al entrar
   verificarCaja() {
     this.productoService.verificarTurno().subscribe({
       next: (resp) => {
         this.cajaAbierta = resp.abierto;
         this.cargando = false;
         
-        // Solo si está abierta cargamos los productos
+        // Solo si está abierta cargamos el menú
         if (this.cajaAbierta) {
           this.cargarProductos();
         }
@@ -79,8 +81,9 @@ export class Ventas implements OnInit {
   }
 
   cobrar(metodo: string) {
+    // 1. Validaciones
     if (this.carrito.length === 0) {
-      alert('El carrito está vacío');
+      Swal.fire('Carrito Vacío', 'Agrega productos antes de cobrar', 'warning');
       return;
     }
 
@@ -97,7 +100,7 @@ export class Ventas implements OnInit {
     }
     else if (metodo === 'Efectivo') {
       if (this.pagoCon < this.total) {
-        alert('El pago en efectivo es insuficiente');
+        Swal.fire('Error', 'El pago en efectivo es insuficiente', 'error');
         return;
       }
     }
@@ -110,17 +113,39 @@ export class Ventas implements OnInit {
       metodoPago: metodo,
     };
 
+    // 2. Registrar Venta (Sin inventario extra)
     this.productoService.registrarVenta(ventaModelo).subscribe({
       next: (resp) => {
-        if(esRegalo) alert('🎁 Producto regalado registrado.');
-        else alert(`¡Venta Exitosa (${metodo})!\nCambio: $${this.cambio}`);
+        if(esRegalo) {
+          Swal.fire({
+            icon: 'info',
+            title: '🎁 Regalado',
+            text: 'Se registró como merma/cortesía.',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        } else {
+          // Ventana de Éxito
+          Swal.fire({
+            icon: 'success',
+            title: '¡Venta Exitosa!',
+            html: `<p style="font-size: 18px">Método: <b>${metodo}</b></p>
+                   <h3>Su Cambio:</h3>
+                   <b style="font-size: 50px; color: #27ae60;">$${this.cambio.toFixed(2)}</b>`,
+            confirmButtonText: 'Aceptar',
+            confirmButtonColor: '#27ae60'
+          });
+        }
         
         this.limpiarTodo();
       },
       error: (err) => {
         console.error(err);
-        // Si el backend rechaza por caja cerrada, aquí atrapamos el error también
-        alert('⛔ ERROR: ' + (err.error || 'No se pudo registrar la venta.'));
+        Swal.fire({
+          icon: 'error',
+          title: 'No se pudo vender',
+          text: err.error || 'Verifique que la caja esté abierta.'
+        });
       }
     });
   }
@@ -135,7 +160,7 @@ export class Ventas implements OnInit {
   salir() {
     this.router.navigate(['/dashboard']);
   }
-  
+
   irACaja() {
     this.router.navigate(['/caja']);
   }

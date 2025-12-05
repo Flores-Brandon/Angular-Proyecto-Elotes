@@ -45,6 +45,12 @@ export class ProductoService {
     return this.http.post<any>(`${this.apiUrl}/usuarios`, empleado, { withCredentials: true });
   }
   
+  // ...
+  
+  actualizarEmpleado(id: number, empleado: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/usuarios/${id}`, empleado, { withCredentials: true });
+  }
+
   bajaEmpleado(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/usuarios/${id}`, { withCredentials: true });
   }
@@ -74,9 +80,19 @@ export class ProductoService {
     return this.http.post<any>(`${this.apiUrl}/ventas`, venta, { withCredentials: true });
   }
 
-  // 📜 OBTENER HISTORIAL DE VENTAS
-  getVentas(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/ventas`, { withCredentials: true });
+ // 📜 OBTENER HISTORIAL (CON FILTROS)
+  // Los signos '?' significan que los datos son opcionales. Si no mandas nada, trae todo.
+  getVentas(inicio?: string, fin?: string): Observable<any[]> {
+    let url = `${this.apiUrl}/ventas`;
+    
+    // Si hay fechas, las agregamos a la URL
+    if (inicio || fin) {
+      url += '?';
+      if (inicio) url += `inicio=${inicio}&`;
+      if (fin) url += `fin=${fin}`;
+    }
+
+    return this.http.get<any[]>(url, { withCredentials: true });
   }
 
   // 🔐 CONTROL DE CAJA
@@ -96,5 +112,18 @@ export class ProductoService {
   
   obtenerResumenTurno(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/turnos/resumen`, { withCredentials: true });
+  }
+
+  inicializarInventario(items: any[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/inventario/inicializar`, items, { withCredentials: true });
+  }
+
+  restarInventario(nombre: string, cantidad: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/inventario/restar`, { nombre, cantidad }, { withCredentials: true });
+  }
+
+  obtenerVentasHoy() {
+    // Llama directamente al endpoint que ya sabe la hora de México
+    return this.http.get(`${this.apiUrl}/ventas/hoy`); 
   }
 }
