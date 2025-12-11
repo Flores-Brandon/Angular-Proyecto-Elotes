@@ -34,7 +34,7 @@
         <p style="color: #1e8449; font-size: 14px; margin-bottom: 20px;">
             Abierto por: <strong>{{ estadoCaja.usuarioAbre || '---' }}</strong>
         </p>
-
+        
         <p><strong>Inicio:</strong> {{ resumen.fechaInicio | date:'medium' }}</p>
 
         <table style="width: 100%; background: white; border-collapse: collapse; margin: 20px 0; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
@@ -44,20 +44,20 @@
             </tr>
             <tr style="border-bottom: 1px solid #eee;">
                 <td style="padding: 10px; text-align: left;">💵 Ventas en Efectivo</td>
-                <td style="padding: 10px; text-align: right; font-weight: bold; color: green;">+ ${{ resumen.totalEfectivo }}</td>
+                <td style="padding: 10px; text-align: right; font-weight: bold; color: green;">+ ${{ resumen.ventasEfectivo }}</td>
             </tr>
             <tr style="border-bottom: 1px solid #eee; background-color: #f9f9f9;">
                 <td style="padding: 10px; text-align: left;">💳 Ventas con Tarjeta (Banco)</td>
-                <td style="padding: 10px; text-align: right; color: #2980b9;">${{ resumen.totalTarjeta }}</td>
+                <td style="padding: 10px; text-align: right; color: #2980b9;">${{ resumen.ventasTarjeta }}</td>
             </tr>
             <tr style="border-bottom: 2px solid #ddd; background-color: #f9f9f9;">
                 <td style="padding: 10px; text-align: left;">🎁 Regalado (Mermas)</td>
-                <td style="padding: 10px; text-align: right; color: #e67e22;">${{ resumen.totalRegalos }}</td>
+                <td style="padding: 10px; text-align: right; color: #e67e22;">${{ resumen.ventasRegalado }}</td>
             </tr>
             <tr style="background-color: #34495e; color: white;">
                 <td style="padding: 15px; text-align: left; font-size: 18px;">💵 TOTAL EN CAJÓN</td>
                 <td style="padding: 15px; text-align: right; font-size: 18px; font-weight: bold;">
-                    ${{ resumen.dineroEnCaja }}
+                    ${{ resumen.totalCajon }}
                 </td>
             </tr>
         </table>

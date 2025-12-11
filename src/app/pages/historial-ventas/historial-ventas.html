@@ -27,15 +27,32 @@
       Ver Hoy
     </button>
 
-    <button (click)="descargarExcel()" style="margin-left: auto; background: #27ae60; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-      📥 Descargar Excel
-    </button>
+    <div style="margin-left: auto; display: flex; gap: 5px; align-items: center;">
+      
+      <select [(ngModel)]="formatoExportacion" 
+              style="padding: 10px; border: 1px solid #bdc3c7; border-radius: 4px; cursor: pointer; background: white;">
+        <option value="csv">📄 CSV (Excel)</option>
+        
+        <option value="json">📋 JSON (Datos)</option>
+        
+        <option value="pdf">📕 PDF (Reporte)</option>
+      </select>
 
+      <button (click)="exportarArchivo()" 
+              style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        📥 Descargar
+      </button>
+
+    </div>
   </div>
 
   <div style="background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
     <span style="font-size: 14px; opacity: 0.9;">Ventas en este periodo:</span>
-    <div style="font-size: 32px; font-weight: bold;">${{ totalVendido.toFixed(2) }}</div>
+    
+    <div style="font-size: 32px; font-weight: bold;">
+      $ {{ +totalVendido | number:'1.2-2' }}
+    </div>
+    
     <div style="font-size: 12px;">({{ listaVentas.length }} operaciones registradas)</div>
   </div>
 
@@ -45,7 +62,7 @@
         <tr>
           <th style="padding: 12px; text-align: left;">ID</th>
           <th style="padding: 12px; text-align: left;">Fecha y Hora</th>
-          <th style="padding: 12px; text-align: left;">Método</th>
+          <th style="padding: 12px; text-align: left;">Método / Tipo</th>
           <th style="padding: 12px; text-align: left;">Cajero</th>
           <th style="padding: 12px; text-align: right;">Total</th>
         </tr>
@@ -57,18 +74,18 @@
           <td style="padding: 12px;">{{ venta.fechaHora | date:'medium' }}</td>
 
           <td style="padding: 12px;">
-            <span [style.color]="venta.metodoPago === 'Tarjeta' ? '#2980b9' : (venta.metodoPago === 'Regalo' ? '#e67e22' : 'green')" style="font-weight: bold;">
-              {{ venta.metodoPago }}
+            <span [style.color]="getColorVenta(venta)" style="font-weight: bold;">
+              {{ getDescripcionVenta(venta) }}
             </span>
           </td>
 
           <td style="padding: 12px;">ID: {{ venta.idUsuario }}</td>
           
           <td style="padding: 12px; text-align: right; font-weight: bold; color: #27ae60;">
-            ${{ venta.totalVenta }}
+            $ {{ +venta.totalVenta | number:'1.2-2' }}
           </td>
         </tr>
-      </tbody>
+      </tbody>  
     </table>
 
     <div *ngIf="listaVentas.length === 0" style="padding: 40px; text-align: center; color: #aaa;">

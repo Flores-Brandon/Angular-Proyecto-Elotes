@@ -36,7 +36,10 @@ export class ControlCaja implements OnInit {
 
   cargarResumen() {
     this.service.obtenerResumenTurno().subscribe({
-      next: (datos) => this.resumen = datos
+      next: (datos) => {
+        this.resumen = datos;
+        // console.log(this.resumen); // Útil para ver si llegan los datos
+      }
     });
   }
 
@@ -70,7 +73,8 @@ export class ControlCaja implements OnInit {
       return;
     }
 
-    const totalEsperado = this.resumen ? this.resumen.dineroEnCaja : 0;
+    // CORRECCIÓN AQUÍ: Usamos 'totalCajon' en lugar de 'dineroEnCaja'
+    const totalEsperado = this.resumen ? this.resumen.totalCajon : 0;
 
     Swal.fire({
       title: '¿Cerrar Turno?',

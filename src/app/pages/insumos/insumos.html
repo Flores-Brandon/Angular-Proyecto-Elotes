@@ -30,11 +30,17 @@
       </div>
 
       <div style="width: 100px;">
-        <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">Stock:</label>
+        <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px;">Stock Bodega:</label>
         <input type="number" [(ngModel)]="nuevoInsumo.stock" 
                style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
       </div>
 
+      <div style="display: flex; align-items: center; background: #f9f9f9; padding: 5px 10px; border-radius: 5px; border: 1px dashed #ccc;">
+        <input type="checkbox" [(ngModel)]="nuevoInsumo.requiereConteo" id="chkConteo" style="width: 20px; height: 20px; margin-right: 8px; cursor: pointer;">
+        <label for="chkConteo" style="font-size: 11px; font-weight: bold; cursor: pointer; line-height: 1.2;">
+            Contar al<br>abrir turno
+        </label>
+      </div>
       <button (click)="guardar()" 
               [style.background]="esEdicion ? '#f39c12' : '#8e44ad'"
               style="color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
@@ -55,7 +61,7 @@
           <th style="padding: 15px; text-align: left;">Insumo</th>
           <th style="padding: 15px; text-align: left;">Unidad</th>
           <th style="padding: 15px; text-align: left;">Stock Bodega</th>
-          <th style="padding: 15px; text-align: center;">Acciones</th>
+          <th style="padding: 15px; text-align: center;">Control Turno</th> <th style="padding: 15px; text-align: center;">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -68,6 +74,11 @@
             </span>
           </td>
           
+          <td style="padding: 15px; text-align: center;">
+            <span *ngIf="item.requiereConteo" style="background: #d5f5e3; color: #1e8449; padding: 3px 8px; border-radius: 10px; font-size: 12px; font-weight: bold;">✅ Sí</span>
+            <span *ngIf="!item.requiereConteo" style="color: #ccc; font-size: 12px;">No</span>
+          </td>
+
           <td style="padding: 15px; text-align: center;">
             <button (click)="editar(item)" style="margin-right: 10px; background: white; border: 1px solid #3498db; color: #3498db; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold;">
               ✏️ Editar

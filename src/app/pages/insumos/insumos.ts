@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // <--- Importante para navegar
+import { Router } from '@angular/router';
 import { ProductoService } from '../../services/producto.service';
 import Swal from 'sweetalert2';
 
@@ -13,86 +13,105 @@ import Swal from 'sweetalert2';
   styleUrl: './insumos.css'
 })
 export class Insumos implements OnInit {
-  
+
   listaInsumos: any[] = [];
-  nuevoInsumo: any = { idInsumo: 0, nombre: '', unidadMedida: '', stock: 0, requiereConteo: false };
+  
+  // Objeto para el formulario
+  nuevoInsumo = {
+    idInsumo: 0,
+    nombre: '',
+    unidadMedida: '',
+    stock: 0,
+    requiereConteo: false // 🟢 IMPORTANTE: Inicializar en false
+  };
+
   esEdicion: boolean = false;
 
-  // 👇 Asegúrate de que 'private router: Router' esté aquí
-  constructor(private productoService: ProductoService, private router: Router) {}
+  constructor(private service: ProductoService, private router: Router) {}
 
   ngOnInit() {
     this.cargarInsumos();
   }
 
   cargarInsumos() {
-    this.productoService.getInsumos().subscribe({
-      next: (datos) => this.listaInsumos = datos,
-      error: () => Swal.fire('Error', 'No se pudo cargar el inventario', 'error')
+    this.service.getInsumos().subscribe({
+      next: (datos: any) => this.listaInsumos = datos,
+      error: (err) => console.error('Error cargando insumos', err)
     });
   }
 
   guardar() {
-    if (!this.nuevoInsumo.nombre || !this.nuevoInsumo.unidadMedida || this.nuevoInsumo.stock < 0) {
-      Swal.fire('Cuidado', 'Llena todos los campos correctamente.', 'warning');
+    // Validaciones básicas
+    if (!this.nuevoInsumo.nombre || !this.nuevoInsumo.unidadMedida) {
+      Swal.fire('Atención', 'Nombre y Unidad son obligatorios', 'warning');
       return;
     }
 
     if (this.esEdicion) {
-      this.productoService.actualizarInsumo(this.nuevoInsumo.idInsumo, this.nuevoInsumo).subscribe({
+      // ACTUALIZAR
+      this.service.actualizarInsumo(this.nuevoInsumo.idInsumo, this.nuevoInsumo).subscribe({
         next: () => {
-          Swal.fire('Actualizado', `El insumo ${this.nuevoInsumo.nombre} se actualizó.`, 'success');
+          Swal.fire('Actualizado', 'El insumo se actualizó correctamente', 'success');
           this.limpiarFormulario();
           this.cargarInsumos();
         },
-        error: () => Swal.fire('Error', 'No se pudo actualizar.', 'error')
+        error: (err) => Swal.fire('Error', 'No se pudo actualizar', 'error')
       });
     } else {
-      this.productoService.crearInsumo(this.nuevoInsumo).subscribe({
+      // CREAR NUEVO
+      // Nos aseguramos de mandar el id en 0 para que la BD lo genere
+      const insumoParaGuardar = { ...this.nuevoInsumo, idInsumo: 0 };
+      
+      this.service.crearInsumo(insumoParaGuardar).subscribe({
         next: () => {
-          Swal.fire('Creado', `Insumo ${this.nuevoInsumo.nombre} agregado.`, 'success');
+          Swal.fire('Creado', 'Nuevo insumo agregado', 'success');
           this.limpiarFormulario();
           this.cargarInsumos();
         },
-        error: () => Swal.fire('Error', 'No se pudo guardar.', 'error')
+        error: (err) => Swal.fire('Error', 'No se pudo crear el insumo', 'error')
       });
     }
   }
 
   editar(item: any) {
-    this.nuevoInsumo = { ...item };
     this.esEdicion = true;
+    // Copiamos el objeto para no modificar la tabla en vivo hasta guardar
+    // Esto copia también el estado de 'requiereConteo'
+    this.nuevoInsumo = { ...item }; 
   }
 
   eliminar(id: number) {
     Swal.fire({
-      title: '¿Eliminar Insumo?',
-      text: "Esta acción no se puede deshacer.",
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esto",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, borrar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonText: 'Sí, borrarlo'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.productoService.eliminarInsumo(id).subscribe({
+        this.service.eliminarInsumo(id).subscribe({
           next: () => {
             Swal.fire('Borrado', 'El insumo ha sido eliminado.', 'success');
             this.cargarInsumos();
           },
-          error: () => Swal.fire('Error', 'No se pudo eliminar.', 'error')
+          error: (err) => Swal.fire('Error', 'No se puede borrar (quizás tiene recetas asociadas)', 'error')
         });
       }
     });
   }
 
-limpiarFormulario() {
-  this.nuevoInsumo = { idInsumo: 0, nombre: '', unidadMedida: '', stock: 0, requiereConteo: false };
-  this.esEdicion = false;
-}
+  limpiarFormulario() {
+    this.esEdicion = false;
+    this.nuevoInsumo = {
+      idInsumo: 0,
+      nombre: '',
+      unidadMedida: '',
+      stock: 0,
+      requiereConteo: false // 🟢 Resetear a false
+    };
+  }
 
-  // 👇 ESTA FUNCIÓN ES LA QUE HACE LA MAGIA DEL BOTÓN
   volver() {
     this.router.navigate(['/dashboard']);
   }
