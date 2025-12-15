@@ -10,33 +10,38 @@ export class ProductoService {
 
   constructor(private http: HttpClient) { }
 
-  // --- OBTENER PRODUCTOS ---
+  // ==========================================
+  // 🌽 MÓDULO DE PRODUCTOS
+  // ==========================================
+
   getProductos(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/productos`, { withCredentials: true });
   }
 
-  // --- CREAR PRODUCTO ---
   crearProducto(producto: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/productos`, producto, { withCredentials: true });
   }
 
-  // --- ¡NUEVO! ACTUALIZAR (PUT) ---
   actualizarProducto(id: number, producto: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/productos/${id}`, producto, { withCredentials: true });
   }
 
-  // --- ¡NUEVO! ELIMINAR (DELETE) ---
   eliminarProducto(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/productos/${id}`, { withCredentials: true });
   }
 
-  // --- ¡NUEVO! INICIAR SESIÓN ---
+  // ==========================================
+  // 🔐 AUTENTICACIÓN
+  // ==========================================
+
   login(credenciales: any): Observable<any> {
-    // Enviamos usuario y contraseña a /api/login
     return this.http.post<any>(`${this.apiUrl}/login`, credenciales, { withCredentials: true });
   }
 
-// 👥 EMPLEADOS
+  // ==========================================
+  // 👥 EMPLEADOS / USUARIOS (LOGIN)
+  // ==========================================
+
   getEmpleados(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/usuarios`, { withCredentials: true });
   }
@@ -44,8 +49,6 @@ export class ProductoService {
   crearEmpleado(empleado: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/usuarios`, empleado, { withCredentials: true });
   }
-  
-  // ...
   
   actualizarEmpleado(id: number, empleado: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/usuarios/${id}`, empleado, { withCredentials: true });
@@ -56,7 +59,7 @@ export class ProductoService {
   }
 
   // ==========================================
-  // 🌽 MÓDULO DE INSUMOS
+  // 📦 MÓDULO DE INSUMOS
   // ==========================================
 
   getInsumos(): Observable<any[]> {
@@ -75,27 +78,48 @@ export class ProductoService {
     return this.http.delete<any>(`${this.apiUrl}/insumos/${id}`, { withCredentials: true });
   }
 
-  // 💰 REGISTRAR VENTA (MySQL)
+  // ==========================================
+  // 💰 VENTAS Y HISTORIAL
+  // ==========================================
+
+  // Registrar venta nueva (MySQL)
   registrarVenta(venta: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/ventas`, venta, { withCredentials: true });
   }
 
- // 📜 OBTENER HISTORIAL (CON FILTROS)
-  // Los signos '?' significan que los datos son opcionales. Si no mandas nada, trae todo.
-  getVentas(inicio?: string, fin?: string): Observable<any[]> {
-    let url = `${this.apiUrl}/ventas`;
+  // 📜 OBTENER HISTORIAL (OPTIMIZADO CON PAGINACIÓN)
+  // 👇 CAMBIO IMPORTANTE: Agregamos 'pagina' y cambiamos el tipo de retorno a 'any'
+  getVentas(inicio?: string, fin?: string, exportar: boolean = false, pagina: number = 1): Observable<any> {
+    let params = [];
+
+    // Si hay fechas, las agregamos al array de parámetros
+    if (inicio) params.push(`inicio=${inicio}`);
+    if (fin) params.push(`fin=${fin}`);
     
-    // Si hay fechas, las agregamos a la URL
-    if (inicio || fin) {
-      url += '?';
-      if (inicio) url += `inicio=${inicio}&`;
-      if (fin) url += `fin=${fin}`;
+    // Agregamos el parámetro exportar (true o false)
+    params.push(`exportar=${exportar}`);
+
+    // 👇 Si NO es exportación, enviamos los datos de paginación
+    if (!exportar) {
+        params.push(`pagina=${pagina}`);
+        params.push(`cantidad=10`); 
     }
 
-    return this.http.get<any[]>(url, { withCredentials: true });
+    // Construimos la Query String (?inicio=...&fin=...&exportar=true&pagina=1)
+    const queryString = params.length > 0 ? `?${params.join('&')}` : '';
+
+    return this.http.get<any>(`${this.apiUrl}/ventas${queryString}`, { withCredentials: true });
   }
 
-  // 🔐 CONTROL DE CAJA
+  // Endpoint rápido para el total del día
+  obtenerVentasHoy() {
+    return this.http.get(`${this.apiUrl}/ventas/hoy`); 
+  }
+
+  // ==========================================
+  // 🔐 CONTROL DE CAJA (TURNOS)
+  // ==========================================
+
   verificarTurno(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/turnos/estado`, { withCredentials: true });
   }
@@ -114,6 +138,10 @@ export class ProductoService {
     return this.http.get<any>(`${this.apiUrl}/turnos/resumen`, { withCredentials: true });
   }
 
+  // ==========================================
+  // 📦 INVENTARIO (AJUSTES)
+  // ==========================================
+
   inicializarInventario(items: any[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/inventario/inicializar`, items, { withCredentials: true });
   }
@@ -122,8 +150,57 @@ export class ProductoService {
     return this.http.post(`${this.apiUrl}/inventario/restar`, { nombre, cantidad }, { withCredentials: true });
   }
 
-  obtenerVentasHoy() {
-    // Llama directamente al endpoint que ya sabe la hora de México
-    return this.http.get(`${this.apiUrl}/ventas/hoy`); 
+  // ==========================================
+  // ✨ NUEVOS MÓDULOS (CRUD COMPLETO)
+  // ==========================================
+
+  // --- 👔 PERSONAL (RRHH) ---
+  
+  // Obtener lista completa (JOIN)
+  getPersonalCompleto(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/personal`, { withCredentials: true });
   }
+
+  // Obtener lista de puestos para el dropdown
+  getPuestos(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/personal/puestos`, { withCredentials: true });
+  }
+
+  // Crear Empleado
+  crearPersonal(empleado: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/personal`, empleado, { withCredentials: true });
+  }
+
+  // Editar Empleado
+  actualizarPersonal(id: number, empleado: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/personal/${id}`, empleado, { withCredentials: true });
+  }
+
+  // Eliminar Empleado (Soft Delete)
+  eliminarPersonal(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/personal/${id}`, { withCredentials: true });
+  }
+
+  // --- 🚚 PROVEEDORES (COMPRAS) ---
+
+  // Obtener lista
+  getProveedores(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/proveedores`, { withCredentials: true });
+  }
+
+  // Crear Proveedor
+  crearProveedor(prov: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/proveedores`, prov, { withCredentials: true });
+  }
+
+  // Editar Proveedor
+  actualizarProveedor(id: number, prov: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/proveedores/${id}`, prov, { withCredentials: true });
+  }
+
+  // Eliminar Proveedor (Soft Delete)
+  eliminarProveedor(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/proveedores/${id}`, { withCredentials: true });
+  }
+
 }

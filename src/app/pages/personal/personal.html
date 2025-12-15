@@ -1,0 +1,55 @@
+<div style="padding: 30px; font-family: sans-serif; max-width: 900px; margin: 0 auto;">
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <h1 style="color: #2c3e50;">👔 Gestión de Personal</h1>
+    <button (click)="volver()" style="padding: 8px 15px; cursor: pointer; background: #95a5a6; color: white; border: none; border-radius: 4px;">⬅ Volver</button>
+  </div>
+
+  <div [style.background-color]="esEdicion ? '#fff3cd' : 'white'" 
+       style="padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 30px; border: 1px solid #ddd;">
+    
+    <h3 style="margin-top: 0; color: #2c3e50;">{{ esEdicion ? '✏️ Editar Empleado' : '📝 Contratar Empleado' }}</h3>
+    
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <input type="text" [(ngModel)]="empleado.nombre" placeholder="Nombre" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+      <input type="text" [(ngModel)]="empleado.apellido" placeholder="Apellido" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+      
+      <select [(ngModel)]="empleado.idPuesto" style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <option [value]="0" disabled>Seleccionar Puesto...</option>
+        <option *ngFor="let p of listaPuestos" [value]="p.idPuesto">
+          {{ p.nombre }} ({{ p.depto }})
+        </option>
+      </select>
+      
+      <button (click)="guardar()" [style.background]="esEdicion ? '#f39c12' : '#27ae60'" style="padding: 10px 20px; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold;">
+        {{ esEdicion ? 'Guardar' : 'Contratar' }}
+      </button>
+      <button *ngIf="esEdicion" (click)="limpiar()" style="padding: 10px; background: #95a5a6; color: white; border: none; cursor: pointer; border-radius: 4px;">Cancelar</button>
+    </div>
+  </div>
+
+  <table style="width: 100%; border-collapse: collapse; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <thead style="background: #34495e; color: white;">
+      <tr>
+        <th style="padding: 12px; text-align: left;">Nombre</th>
+        <th style="padding: 12px; text-align: left;">Puesto</th>
+        <th style="padding: 12px; text-align: left;">Depto</th>
+        <th style="padding: 12px; text-align: right;">Sueldo</th>
+        <th style="padding: 12px; text-align: center;">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of listaPersonal" style="border-bottom: 1px solid #eee; background: white;">
+        <td style="padding: 12px; font-weight: bold;">{{ p.nombreCompleto }}</td>
+        <td style="padding: 12px; color: #2980b9;">{{ p.puesto }}</td>
+        <td style="padding: 12px;"><small style="background: #eee; padding: 3px 8px; border-radius: 10px;">{{ p.departamento }}</small></td>
+        <td style="padding: 12px; text-align: right; color: green;">${{ p.salario | number:'1.2-2' }}</td>
+        
+        <td style="padding: 12px; text-align: center;">
+          <button (click)="editar(p)" style="margin-right: 5px; border: none; background: transparent; cursor: pointer; font-size: 16px;">✏️</button>
+          <button (click)="eliminar(p.idEmpleado)" style="border: none; background: transparent; cursor: pointer; font-size: 16px;">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

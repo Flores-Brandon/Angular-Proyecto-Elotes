@@ -23,9 +23,19 @@
         📜 Historial
       </button>
 
-      <button *ngIf="esJefe" (click)="irAEmpleados()" 
+      <button *ngIf="esJefe" (click)="irAPersonal()" 
               style="background: #e67e22; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
-        👥 Empleados
+        👔 Personal
+      </button>
+
+      <button *ngIf="esJefe" (click)="irAProveedores()" 
+        style="background: #8e44ad; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+  🚚 Proveedores
+      </button>
+      
+      <button *ngIf="esJefe" (click)="irAEmpleados()" 
+              style="background: #d35400; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+        🔑 Usuarios
       </button>
       
       <button (click)="irACaja()" 

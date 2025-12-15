@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductoService } from '../../services/producto.service';
-import Swal from 'sweetalert2'; 
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,151 +15,130 @@ import Swal from 'sweetalert2';
 export class Dashboard implements OnInit {
   
   listaProductos: any[] = [];
-  nuevoProducto: any = { idProducto: 0, nombre: '', precioVenta: 0 };
+  nuevoProducto: any = { nombre: '', precioVenta: 0 };
   esEdicion: boolean = false;
-  
-  // 👇 DOS VARIABLES DE CONTROL AHORA
+
+  // Roles
   esJefe: boolean = false;
   esGerente: boolean = false;
+  rolActual: string = '';
 
   constructor(private productoService: ProductoService, private router: Router) {}
 
   ngOnInit() {
-    // 1. LEEMOS EL ROL AL INICIAR
-    const rolGuardado = localStorage.getItem('miRol');
-    console.log('Rol detectado en Dashboard:', rolGuardado);
-
-    // 2. EVALUACIÓN DE ROLES
-    this.esJefe = (rolGuardado === 'Jefe'); 
-    this.esGerente = (rolGuardado === 'Gerente'); 
-
+    this.verificarRol();
     this.cargarProductos();
+  }
+
+  verificarRol() {
+    const usuarioStr = localStorage.getItem('usuario');
+    if (usuarioStr) {
+      const usuario = JSON.parse(usuarioStr);
+      this.rolActual = usuario.rol;
+      
+      console.log("Rol detectado en Dashboard:", this.rolActual);
+
+      if (this.rolActual === 'Jefe') this.esJefe = true;
+      if (this.rolActual === 'Gerente') this.esGerente = true;
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
 
   cargarProductos() {
     this.productoService.getProductos().subscribe({
-      next: (datos: any) => this.listaProductos = datos,
-      error: () => {
-        this.router.navigate(['/login']);
-      }
+      next: (datos) => this.listaProductos = datos,
+      error: (e) => console.error(e)
     });
   }
 
   guardar() {
-    // 🔒 PERMISO: JEFE O GERENTE PUEDEN EDITAR EL MENÚ
-    if (!this.esJefe && !this.esGerente) {
-      Swal.fire('Acceso denegado', 'No tienes permisos para modificar el menú.', 'error');
-      return; 
-    }
-
     if (!this.nuevoProducto.nombre || this.nuevoProducto.precioVenta <= 0) {
-      Swal.fire('Faltan datos', 'Por favor ingresa un nombre y precio válido.', 'warning');
+      Swal.fire('Error', 'Llena los datos correctamente', 'warning');
       return;
     }
 
     if (this.esEdicion) {
-      this.productoService.actualizarProducto(this.nuevoProducto.idProducto, this.nuevoProducto).subscribe({
-        next: () => {
-          Swal.fire({
-            icon: 'success',
-            title: '¡Actualizado!',
-            text: 'El producto se modificó correctamente.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          this.limpiarFormulario();
-          this.cargarProductos();
-        },
-        error: () => Swal.fire('Error', 'No se pudo actualizar el producto.', 'error')
+      this.productoService.actualizarProducto(this.nuevoProducto.idProducto, this.nuevoProducto).subscribe(() => {
+        Swal.fire('Actualizado', 'Producto modificado con éxito', 'success');
+        this.limpiarFormulario();
+        this.cargarProductos();
       });
     } else {
-      this.nuevoProducto.idProducto = 0; 
-      this.productoService.crearProducto(this.nuevoProducto).subscribe({
-        next: () => {
-          Swal.fire({
-            icon: 'success',
-            title: '¡Creado!',
-            text: 'Nuevo producto agregado al menú.',
-            timer: 2000,
-            showConfirmButton: false
-          });
-          this.limpiarFormulario();
-          this.cargarProductos();
-        },
-        error: () => Swal.fire('Error', 'No se pudo guardar el producto.', 'error')
+      this.productoService.crearProducto(this.nuevoProducto).subscribe(() => {
+        Swal.fire('Creado', 'Producto agregado al menú', 'success');
+        this.limpiarFormulario();
+        this.cargarProductos();
       });
     }
   }
 
   editar(item: any) {
-    // JEFE O GERENTE pueden activar edición
-    if (!this.esJefe && !this.esGerente) return;
-
     this.nuevoProducto = { ...item }; 
     this.esEdicion = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   eliminar(id: number) {
-    // 🔒 CANDADO ESTRICTO: SOLO EL JEFE PUEDE BORRAR
-    if (!this.esJefe) {
-      Swal.fire('Permiso Insuficiente', 'Solo el Dueño puede eliminar productos.', 'error');
-      return;
-    }
-
     Swal.fire({
       title: '¿Estás seguro?',
-      text: "Eliminarás este producto del menú permanentemente.",
+      text: "No podrás revertir esto",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, borrar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonText: 'Sí, eliminar'
     }).then((result) => {
       if (result.isConfirmed) {
-        this.productoService.eliminarProducto(id).subscribe({
-          next: () => {
-            Swal.fire('¡Eliminado!', 'El producto ha sido borrado.', 'success');
-            this.cargarProductos();
-          },
-          error: () => Swal.fire('Error', 'No se pudo eliminar.', 'error')
+        this.productoService.eliminarProducto(id).subscribe(() => {
+          Swal.fire('Eliminado', 'El producto ha sido borrado.', 'success');
+          this.cargarProductos();
         });
       }
     });
   }
 
   limpiarFormulario() {
-    this.nuevoProducto = { idProducto: 0, nombre: '', precioVenta: 0 };
+    this.nuevoProducto = { nombre: '', precioVenta: 0 };
     this.esEdicion = false;
   }
 
-  // --- NAVEGACIÓN CON PERMISOS ---
+  // ==========================================
+  // 🧭 SISTEMA DE NAVEGACIÓN
+  // ==========================================
 
-  irAInsumos() { 
-    // Jefe o Gerente entran
-    if(this.esJefe || this.esGerente) this.router.navigate(['/insumos']); 
+  irAVentas() {
+    this.router.navigate(['/ventas']);
   }
 
-  irAHistorial() { 
-    // Jefe o Gerente entran
-    if(this.esJefe || this.esGerente) this.router.navigate(['/historial']); 
+  irAInsumos() {
+    this.router.navigate(['/insumos']);
   }
 
-  irAEmpleados() { 
-    // SOLO JEFE entra
-    if(this.esJefe) {
-      this.router.navigate(['/empleados']); 
-    } else {
-      Swal.fire('Acceso Restringido', 'Solo el Dueño puede gestionar personal.', 'warning');
-    }
+  irAHistorial() {
+    this.router.navigate(['/historial-ventas']);
   }
 
-  irACaja() { this.router.navigate(['/caja']); } 
-  irAVentas() { this.router.navigate(['/ventas']); }
+  irAEmpleados() {
+    // Este botón lleva a la gestión de USUARIOS (Login)
+    this.router.navigate(['/empleados']);
+  }
+
+  irAPersonal() {
+    // Este botón lleva a la gestión de PERSONAL (RRHH - Puestos y Salarios)
+    this.router.navigate(['/personal']);
+  }
+
+  // 👇 AQUÍ ESTÁ LA FUNCIÓN QUE FALTABA 👇
+  irAProveedores() {
+    this.router.navigate(['/proveedores']);
+  }
+
+  irACaja() {
+    this.router.navigate(['/caja']);
+  }
 
   salir() {
-    localStorage.clear(); 
+    localStorage.removeItem('usuario');
     this.router.navigate(['/login']);
   }
 }
